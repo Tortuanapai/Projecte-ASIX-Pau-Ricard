@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Ripa - Panel de Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        /* Aquests ajustos arreglen el "centrat" del teu CSS només per aquesta pàgina */
+        body {
+            display: block; /* Trenquem el centrat vertical per tenir un layout de web real */
+            padding: 0;
+            margin: 0;
+        }
+
+        .main-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .header-user-info {
+            font-size: 14px;
+        }
+
+        .btn-logout-small {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /* Contenidor que usa la teva classe container-admin (900px) */
+        .content-area {
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Graella per a les opcions del panel */
+        .grid-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .card-option {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--secondary-color);
+        }
+
+        .card-option h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .card-option p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <h2 style="margin:0; color:white; font-size: 20px;">🏥 HOSPITAL RIPA</h2>
+        </div>
+        <div class="header-user-info">
+            Connectat com: <strong>{{ nombre }}</strong> ({{ rol }})
+            <a href="{{ url_for('logout') }}" class="btn-logout-small">Sortir</a>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <div class="dashboard-wrapper">
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="container-admin">
+                <h1>Benvingut al Panel de Gestió</h1>
+                <h2>Àrea de control centralitzat del centre</h2>
+                
+                <p style="text-align: center; color: #555;">
+                    Des d'aquí pots supervisar els accessos i gestionar els usuaris del sistema hospitalari.
+                </p>
+
+                <div class="grid-options">
+                    
+                    {% if rol == 'Administrador' %}
+                    <div class="card-option">
+                        <h3>Gestió d'Usuaris</h3>
+                        <p>Valida les sol·licituds de registre que estan pendents d'aprovació pel departament.</p>
+                        <a href="{{ url_for('admin_panel') }}" class="btn">Revisar Pendents</a>
+                    </div>
+                    {% endif %}
+
+                    <div class="card-option">
+                        <h3>Registres d'Accés</h3>
+                        <p>Consulta l'historial complet d'entrades, sortides i accions realitzades (accessos.log).</p>
+                        <a href="{{ url_for('ver_logs') }}" class="btn btn-secondary">Veure Registres</a>
+                    </div>
+
+                </div>
+            </div>
+
+            <p class="footer-text">Hospital de Blanes i Ripa - Departament d'Informàtica © 2026</p>
+        </div>
+    </div>
+
+</body>
+</html>

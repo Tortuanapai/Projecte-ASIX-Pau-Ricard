@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <title>Administració - Hospital Blanes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-admin">
+        <h1>Panell d'Administració</h1>
+        <h2>Sol·licituds de registre pendents</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>DNI Usuari</th>
+                    <th>Rol Sol·licitat</th>
+                    <th style="text-align: center;">Accions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in lista %}
+                <tr>
+                    <td>{{ u[1] }}</td>
+                    <td>{{ u[2] }}</td>
+                    <td style="text-align: center;">
+                        <a href="{{ url_for('aprovar', id=u[0]) }}" style="color: green; font-weight: bold;">Aprovar</a> | 
+                        <a href="{{ url_for('rebutjar', id=u[0]) }}" style="color: red; font-weight: bold;">Rebutjar</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px; color: #666;">No hi ha sol·licituds pendents.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('panel') }}">← Tornar al meu Panel</a>
+        </div>
+    </div>
+</body>
+</html>
