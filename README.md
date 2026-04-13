@@ -85,7 +85,6 @@ L'aplicació utilitza **Python (Flask)** per connectar la lògica amb PostgreSQL
 
 ### 1. Requisits
 Necessites Python 3 i PostgreSQL instal·lats. Instal·la les llibreries:
-```bash
 pip install flask psycopg2 werkzeug
 ### **2. Base de Dades**
 Crea la base de dades executant els scripts SQL esmentats a la secció superior.
