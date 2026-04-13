@@ -1,4 +1,4 @@
-# 🏥 Hospital Blanes - Sistema de Gestió de Base de Dades
+# 🏥 Hospital Blanes RIPA - Sistema de Gestió de Base de Dades
 
 Aquest projecte consisteix en el disseny i la implementació d'una base de dades relacional per a la gestió interna de l'Hospital de Blanes. El sistema està pensat per coordinar la infraestructura, el personal sanitari i el flux operatiu de pacients.
 
