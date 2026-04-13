@@ -91,5 +91,5 @@ Crea la base de dades executant els scripts SQL esmentats a la secció superior.
 Configura el teu Host, User i Password al fitxer settings.json.
 ### **3. Execució**
 Obre una terminal a la carpeta del projecte i executa:
-python app.py
+**python app.py**
 Accedeix al sistema mitjançant el navegador a http://localhost.
