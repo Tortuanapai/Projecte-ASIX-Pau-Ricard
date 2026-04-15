@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs del Sistema - Hospital Ripa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Ajuste para que no esté centrado verticalmente y sea cómodo de leer */
+        body { display: block; padding: 20px; }
+        .log-container { margin: 0 auto; max-width: 1000px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .back-link { display: inline-block; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="log-container">
+        <a href="{{ url_for('panel') }}" class="back-link">← Tornar al Panel</a>
+        <h1>Registre d'Accessos</h1>
+        <h2>Historial complet de l'arxiu accessos.log</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Registre d'activitat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linea in logs %}
+                <tr>
+                    <td style="font-family: monospace; font-size: 13px;">{{ linea }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td>No hi ha registres disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
