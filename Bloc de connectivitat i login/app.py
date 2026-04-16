@@ -9,7 +9,7 @@ from database import connect_to_db
 app = Flask(__name__)
 app.secret_key = 'hospital_blanes_ripa_2026_secure_key'
 
-# --- FUNCIÓ DE LOGS (CORRECCIÓ: RUTA ABSOLUTA) ---
+# --- FUNCIÓ DE LOGS ---
 def registrar_log(usuari, accio, estat):
     try:
         # Busquem la carpeta on està el script per evitar errors de permisos en el port 80
@@ -28,7 +28,6 @@ def registrar_log(usuari, accio, estat):
     except Exception as e:
         print(f"⚠️ ERROR ESCRIVENT LOG: {e}")
 
-# --- DECORADOR DE SEGURETAT ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -92,7 +91,6 @@ def login():
 
         cur = conn.cursor()
         try:
-            # CORRECCIÓ: Agafem també el nom per a la sessió
             cur.execute("SELECT password_hash, usuario, nom_rol FROM usuaris_registrats WHERE usuario = %s", (dni_web,))
             usuari = cur.fetchone()
             
@@ -101,8 +99,6 @@ def login():
                 session['usuario'] = usuari[1]
                 session['nombre'] = usuari[1]
                 session['rol'] = usuari[2]
-                
-                # CORRECCIÓ: Registrar LOG ABANS del redirect
                 registrar_log(dni_web, "LOGIN", "ÈXIT")
                 
                 cur.close()
