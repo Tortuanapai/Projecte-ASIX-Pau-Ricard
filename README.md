@@ -9,7 +9,7 @@ Aquest projecte consisteix en el disseny i la implementació d'una base de dades
 La base de dades s'ha desenvolupat en **PostgreSQL**. Aquests fitxers contenen tota la lògica estructural del sistema:
 
 * 🗄️ **Creació de la Base de Dades:** [script_database.sql](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Disseny%20ER%20-%20Model%20Relacional/script_database.sql)
-* 📋 **Definició de Taules i Restriccions:** [script_tables.sql](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Disseny%20ER%20-%20Model%20Relacional/script_tables.sql)
+* 📋 **Definició de Taules i Restriccions:** [script_tables.sql](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/script_tables_v1.sql)
 
 ---
 
@@ -17,8 +17,8 @@ La base de dades s'ha desenvolupat en **PostgreSQL**. Aquests fitxers contenen t
 
 Pots consultar la planificació i l'estructura del model mitjançant els següents enllaços:
 
-* 🖼️ **Model Entitat-Relació:** [Veure Diagrama E/R](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Disseny%20ER%20-%20Model%20Relacional/Model%20E_R.jpg.jpg)
-* 📄 **Model Relacional:** [Consultar Document PDF](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Disseny%20ER%20-%20Model%20Relacional/Model%20Relacional_Pau_Ricard.pdf)
+* 🖼️ **Model Entitat-Relació:** [Veure Diagrama E/R](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/Model%20E_R_v1.jpg)
+* 📄 **Model Relacional:** [Consultar Document PDF](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/Model%20Relacional_v1.pdf)
 
 ---
 
