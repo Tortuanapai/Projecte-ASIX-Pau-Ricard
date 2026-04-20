@@ -215,5 +215,5 @@ def ver_logs():
     return render_template('logs.html', logs=lineas_log)
 
 if __name__ == '__main__':
-    # CORRECCIÓ: Host 0.0.0.0 per permetre l'accés des d'Ubuntu
+    # Host 0.0.0.0 per permetre l'accés des d'Ubuntu
     app.run(host='0.0.0.0', port=80, debug=False)
