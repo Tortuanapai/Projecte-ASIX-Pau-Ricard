@@ -4,77 +4,64 @@ Aquest projecte consisteix en el disseny i la implementació d'una base de dades
 
 ---
 
-## 🛠️ Scripts d'Implementació (Base de Dades)
+## 1. 📊 Disseny de la Base de Dades (Model E-R)
 
-La base de dades s'ha desenvolupat en **PostgreSQL**. Aquests fitxers contenen tota la lògica estructural del sistema:
+La base de dades s'ha desenvolupat en **PostgreSQL**. Aquesta secció inclou tota la planificació estructural i els scripts de creació.
 
+### 🖼️ Documentació del Disseny
+* **Model Entitat-Relació:** [Veure Diagrama E/R](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/Model%20E_R_v1.jpg)
+* **Model Relacional:** [Consultar Document PDF](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/Model%20Relacional_v1.pdf)
+
+### 🛠️ Scripts d'Implementació
 * 🗄️ **Creació de la Base de Dades:** [script_database.sql](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Disseny%20ER%20-%20Model%20Relacional/script_database.sql)
 * 📋 **Definició de Taules i Restriccions:** [script_tables.sql](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/script_tables_v1.sql)
 
 ---
 
-## 📊 Documentació del Disseny
+## 2. 💻 Bloc de Connectivitat i Login
 
-Pots consultar la planificació i l'estructura del model mitjançant els següents enllaços:
-
-* 🖼️ **Model Entitat-Relació:** [Veure Diagrama E/R](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/Model%20E_R_v1.jpg)
-* 📄 **Model Relacional:** [Consultar Document PDF](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/7beeb4383c721a6dee397e2a9cb9cd1efabcdac5/Disseny%20ER%20-%20Model%20Relacional/Model%20Relacional_v1.pdf)
-
----
-
-## 📸 Galeria del Projecte (Screenshots)
-
-### 1. Accés i Registre
-Formulari d'inici de sessió i sistema de registre amb validació de format i gestió de rols.
-<p align="center">
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/ss1.png?raw=true" width="45%" alt="Panel Login" />
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/reg.png?raw=true" width="45%" alt="Panel de registro" />
-</p>
-
-### 2. Control d'Errors i Sol·licituds
-Validació en temps real per garantir la integritat de les dades i feedback a l'usuari en enviar la sol·licitud.
-<p align="center">
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/control.png?raw=true" width="45%" alt="Control de errores" />
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/soli.png?raw=true" width="45%" alt="Solicitud enviada" />
-</p>
-
-### 3. Panel d'Administració i Dashboard
-L'administrador gestiona les aprovacions dels comptes mentre que els usuaris accedeixen al seu panell personalitzat.
-<p align="center">
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/admin.png?raw=true" width="45%" alt="Panel aprobar usuarios" />
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/panel.png?raw=true" width="45%" alt="Dashboard" />
-</p>
-
-### 4. Seguretat i Auditoria
-Visualització de logs d'accés i emmagatzematge de contrasenyes mitjançant hashing segur.
-<p align="center">
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/logs.png?raw=true" width="45%" alt="Logs" />
-  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/hash.png?raw=true" width="45%" alt="Contraseña con hash" />
-</p>
-
----
-
-## 💻 Bloc de Connectivitat i Login
-
-L'aplicació utilitza **Python (Flask)** per connectar la lògica amb PostgreSQL.
+L'aplicació utilitza **Python (Flask)** per connectar la interfície web amb PostgreSQL, gestionant sessions, validacions i rols d'usuari.
 
 ### 📁 Fitxers del Mòdul
 | Mòdul | Enllaç | Descripció |
 | :--- | :--- | :--- |
-| **Programa Main** | [app.py](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Bloc%20de%20connectivitat%20i%20login/app.py) | Lògica principal, rutes i sessió. |
-| **Connector BBDD** | [database.py](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Bloc%20de%20connectivitat%20i%20login/database.py) | Gestió de la connexió a PostgreSQL. |
-| **Test de Connexió** | [test_db.py](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Bloc%20de%20connectivitat%20i%20login/test_db.py) | Script de verificació inicial. |
-| **Configuració** | [settings.json](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Bloc%20de%20connectivitat%20i%20login/settings.json) | Paràmetres de xarxa i credencials. |
-| **Registre Logs** | [accessos.log](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/Bloc%20de%20connectivitat%20i%20login/accessos.log) | Auditoria d'accions del sistema. |
+| **Programa Main** | [app.py](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/main/Bloc%20de%20connectivitat%20i%20login/app.py) | Lògica principal, rutes i servidor Flask. |
+| **Funcions Auxiliars** | [funciones.py](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/main/Bloc%20de%20connectivitat%20i%20login/funciones.py) | Lògica de negoci, validacions i decoradors. |
+| **Connector BBDD** | [database.py](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/main/Bloc%20de%20connectivitat%20i%20login/database.py) | Gestió de la connexió a PostgreSQL. |
+| **Configuració** | [settings.json](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/main/Bloc%20de%20connectivitat%20i%20login/settings.json) | Paràmetres de xarxa i credencials de la BBDD. |
+
+### 📸 Captures de Funcionament
+<p align="center">
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/ss1.png?raw=true" width="45%" alt="Panel Login" />
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/reg.png?raw=true" width="45%" alt="Panel de registro" />
+</p>
+<p align="center">
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/admin.png?raw=true" width="45%" alt="Panel administrar" />
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/panel.png?raw=true" width="45%" alt="Dashboard" />
+</p>
 
 ---
 
-## 📖 Funcionament del Sistema
+## 3. 🛡️ Esquema de Seguretat i Privacitat
 
-1.  **Registre:** L'usuari sol·licita un compte. Les dades es guarden amb estat "pendent" i contrasenya xifrada.
-2.  **Aprovació:** L'administrador revisa i valida les sol·licituds des del seu panell exclusiu.
-3.  **Accés:** Un cop actiu, l'usuari inicia sessió per accedir a les funcionalitats del seu rol.
-4.  **Auditoria:** Tota activitat es registra al fitxer `accessos.log`.
+Implementació de mesures tècniques per garantir la protecció de dades sensibles i el control d'accessos segons el rol de l'usuari.
+
+### 📄 Documentació de Seguretat
+* **Auditoria AGPD:** [Document de Seguretat AGPD](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/Esquema%20de%20Seguretat/Auditoria%20AGPD.pdf) – Marc normatiu.
+* **Matriu de Seguretat:** [Esquema de Seguretat](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/Esquema%20de%20Seguretat/Matriu%20de%20Securetat.pdf) – Definició d'accessos per rol.
+* **Data Masking:** [Documentació Data Masking](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/Esquema%20de%20Seguretat/Data%20Masking.pdf) – Dissociació de dades.
+* **Criptografia SSL:** [Configuració SSL](https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/Esquema%20de%20Seguretat/SSL.pdf) – Seguretat en el trànsit de dades.
+
+### 🧪 Proves de Seguretat i Auditoria
+<p align="center">
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/screenshots/PRUEBADATAMASKING.PNG?raw=true" width="31%" alt="Data Masking" />
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/screenshots/PRUEBA_DENIED_PACIENT.PNG?raw=true" width="31%" alt="Accés Denegat" />
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/209c878cf9d4e09bd8f8db626803cfd22f4dc195/screenshots/prueba_SSL_USADO.PNG?raw=true" width="31%" alt="SSL" />
+</p>
+<p align="center">
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/logs.png?raw=true" width="45%" alt="Logs Auditoria" />
+  <img src="https://github.com/Tortuanapai/Projecte-ASIX-Pau-Ricard/blob/1f43033be7fb871f50a2948d50aeab535e34bb34/screenshots/hash.png?raw=true" width="45%" alt="Hashing contrasenyes" />
+</p>
 
 ---
 
@@ -82,9 +69,5 @@ L'aplicació utilitza **Python (Flask)** per connectar la lògica amb PostgreSQL
 
 ### 1. Requisits
 Instal·la les dependències:
+```bash
 pip install flask psycopg2 werkzeug
-### 2. Base de dades
-Crea l'estructura utilitzant els scripts SQL del directori de disseny
-Configura el fitxer settings.json amb les credencials de la teva base de dades.
-### 3. Execució
-Obre una terminal i executa: **py app.py**
