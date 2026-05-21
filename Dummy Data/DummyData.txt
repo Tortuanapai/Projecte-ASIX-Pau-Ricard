@@ -1,0 +1,115 @@
+=======================================================================
+DOCUMENTACIÓN Y SCRIPTS: PROYECTO INTERMODULAR HOSPITAL DE BLANES
+=======================================================================
+
+-----------------------------------------------------------------------
+1. TEXTO DE INTRODUCCIÓN (Para la documentación del proyecto)
+-----------------------------------------------------------------------
+Este proyecto implementa un sistema modular para la gestión digital del Hospital de Blanes, sustituyendo el registro en papel para optimizar la eficiencia del centro. La solución integra una base de datos relacional en PostgreSQL, una interfaz gráfica desarrollada en Python con Tkinter, y un módulo de exportación de datos en formatos XML y JSON con validación XSD. Todo el entorno está diseñado bajo estrictas directivas de seguridad, enmascaramiento de datos personales y un esquema que garantiza alta disponibilidad.
+
+-----------------------------------------------------------------------
+2. TEXTO DE DUMMY DATA (Explicación de los datos de prueba)
+-----------------------------------------------------------------------
+Para evaluar el rendimiento de la base de datos, se generó un set masivo de datos de prueba que simula el entorno real del hospital: 50.000 pacientes, 100.000 visitas y todo el personal (médicos, enfermeras, administrativos y limpieza). La inserción se realizó mediante scripts de Python utilizando la librería Faker. Se configuró específicamente con codificación UTF-8 y alfabetos de Europa del Este (cirílico) para validar el soporte de caracteres internacionales requerido por el centro.
+
+-----------------------------------------------------------------------
+3. LIBRERÍAS REQUERIDAS E INSTALACIÓN
+-----------------------------------------------------------------------
+Antes de ejecutar el script de generación de datos, es necesario instalar la librería 'Faker' dentro del entorno virtual de Python. Esta librería permite generar nombres, DNIs, fechas y datos médicos ficticios pero con formato real y soporte multilingüe.
+
+Comandos para preparar el entorno e instalar las dependencias:
+
+python3 -m venv venv
+source venv/bin/activate  # (En Windows usar: .\venv\Scripts\Activate.ps1)
+pip install Faker
+pip freeze > requirements.txt
+
+-----------------------------------------------------------------------
+4. SCRIPT DE PYTHON COMPLETE: generar_dummy_data.py
+-----------------------------------------------------------------------
+Guarda el siguiente código en un archivo llamado 'generar_dummy_data.py'. Al ejecutarlo, creará un archivo 'poblar_hospital.sql' con todas las sentencias de inserción masiva listas para ejecutar en PostgreSQL.
+
+import random
+from faker import Faker
+
+# Inicializamos Faker en español y en ruso para los nombres cirílicos requeridos
+fake_es = Faker('es_ES')
+fake_cyr = Faker('ru_RU')
+
+print("Generando datos de prueba para el Hospital de Blanes...")
+
+# Volúmenes de datos requeridos por las especificaciones del proyecto
+NUM_MEDICOS = 100
+NUM_ENFERMERAS = 200
+NUM_ADMINISTRATIVOS = 50
+NUM_LIMPIEZA = 100
+NUM_PACIENTES = 50000
+NUM_VISITAS = 100000
+
+with open("poblar_hospital.sql", "w", encoding="utf-8") as f:
+    f.write("-- Script de carga masiva de datos (Dummy Data) - Hospital de Blanes\n")
+    f.write("-- Codificación: UTF-8 (Soporta caracteres cirílicos)\n\n")
+
+    # 1. GENERAR PERSONAL ADMINISTRATIVO
+    f.write("-- Insertar Personal Administrativo\n")
+    for i in range(1, NUM_ADMINISTRATIVOS + 1):
+        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
+        dni = fake_es.dni()
+        f.write(f"INSERT INTO administratius (id_admin, dni, nom) VALUES ({i}, '{dni}', '{nombre}');\n")
+
+    # 2. GENERAR PERSONAL DE LIMPIEZA
+    f.write("\n-- Insertar Personal de Limpieza\n")
+    for i in range(1, NUM_LIMPIEZA + 1):
+        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
+        dni = fake_es.dni()
+        f.write(f"INSERT INTO neteja (id_neteja, dni, nom) VALUES ({i}, '{dni}', '{nombre}');\n")
+
+    # 3. GENERAR MÉDICOS
+    f.write("\n-- Insertar Metges\n")
+    for i in range(1, NUM_MEDICOS + 1):
+        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
+        dni = fake_es.dni()
+        f.write(f"INSERT INTO metges (id_metge, dni, nom) VALUES ({i}, '{dni}', '{nombre}');\n")
+
+    # 4. GENERAR ENFERMERAS
+    f.write("\n-- Insertar Infermeres\n")
+    for i in range(1, NUM_ENFERMERAS + 1):
+        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
+        dni = fake_es.dni()
+        medico_asignado = random.randint(1, NUM_MEDICOS)
+        f.write(f"INSERT INTO infermeres (id_infermera, dni, nom, id_metge) VALUES ({i}, '{dni}', '{nombre}', {medico_asignado});\n")
+
+    # 5. GENERAR PACIENTES
+    f.write("\n-- Insertar Pacients\n")
+    for i in range(1, NUM_PACIENTES + 1):
+        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
+        dni = fake_es.dni()
+        tsi = f"TSI{random.randint(10000000, 99999999)}"
+        f.write(f"INSERT INTO pacients (id_pacient, dni, tsi, nom) VALUES ({i}, '{dni}', '{tsi}', '{nombre}');\n")
+
+    # 6. GENERAR VISITAS
+    f.write("\n-- Insertar Visites Mèdiques\n")
+    for i in range(1, NUM_VISITAS + 1):
+        id_pacient = random.randint(1, NUM_PACIENTES)
+        id_metge = random.randint(1, NUM_MEDICOS)
+        fecha = fake_es.date_between(start_date='-2y', end_date='today')
+        diagnostico = random.choice(["Revisió anual", "Grip A", "Control analítica", "Dolor muscular", "Fractura", "Cefalea"])
+        f.write(f"INSERT INTO visites (id_visita, id_pacient, id_metge, data_visita, diagnostic) VALUES ({i}, {id_pacient}, {id_metge}, '{fecha}', '{diagnostico}');\n")
+
+print("¡Hecho! Archivo 'poblar_hospital.sql' generado correctamente.")
+
+-----------------------------------------------------------------------
+5. COMANDAS DE EJECUCIÓN Y CONTROL DE VERSIONES (GIT)
+-----------------------------------------------------------------------
+Comandos para ejecutar el script y arrancar la aplicación principal:
+
+python generar_dummy_data.py
+python main.py
+
+Comandos para actualizar el repositorio de GitHub con los avances:
+
+git status
+git add .
+git commit -m "Feat: Finalizada la fase de Dummy Data masiva con soporte cirílico"
+git push origin main
+=======================================================================
