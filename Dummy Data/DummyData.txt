@@ -1,115 +1,247 @@
-=======================================================================
-DOCUMENTACIÓN Y SCRIPTS: PROYECTO INTERMODULAR HOSPITAL DE BLANES
-=======================================================================
+def delete_dummy_data():
+    marker = 'DUMMY DATA'
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Comprobación rápida inicial utilizando el esquema correcto
+            cur.execute("SELECT COUNT(*) FROM hospital_blanes.pacient WHERE descripcio = %s", (marker,))
+            paciente_count = cur.fetchone()[0]
+            if paciente_count == 0:
+                return False, 'No se encontró información dummy para eliminar.'
 
------------------------------------------------------------------------
-1. TEXTO DE INTRODUCCIÓN (Para la documentación del proyecto)
------------------------------------------------------------------------
-Este proyecto implementa un sistema modular para la gestión digital del Hospital de Blanes, sustituyendo el registro en papel para optimizar la eficiencia del centro. La solución integra una base de datos relacional en PostgreSQL, una interfaz gráfica desarrollada en Python con Tkinter, y un módulo de exportación de datos en formatos XML y JSON con validación XSD. Todo el entorno está diseñado bajo estrictas directivas de seguridad, enmascaramiento de datos personales y un esquema que garantiza alta disponibilidad.
+            logging.info('Eliminando datos dummy masivos (100k)... Por favor, espere.')
 
------------------------------------------------------------------------
-2. TEXTO DE DUMMY DATA (Explicación de los datos de prueba)
------------------------------------------------------------------------
-Para evaluar el rendimiento de la base de datos, se generó un set masivo de datos de prueba que simula el entorno real del hospital: 50.000 pacientes, 100.000 visitas y todo el personal (médicos, enfermeras, administrativos y limpieza). La inserción se realizó mediante scripts de Python utilizando la librería Faker. Se configuró específicamente con codificación UTF-8 y alfabetos de Europa del Este (cirílico) para validar el soporte de caracteres internacionales requerido por el centro.
+            # 1. Eliminar de tablas dependientes (Puentes) usando USING (Mucho más rápido que IN SELECT)
+            cur.execute("""
+                DELETE FROM visita_medicament 
+                USING visita 
+                WHERE visita_medicament.id_visita = visita.id_visita 
+                  AND visita.observacions = %s
+            """, (marker,))
+            
+            cur.execute("""
+                DELETE FROM visita_diagnostic 
+                USING visita 
+                WHERE visita_diagnostic.id_visita = visita.id_visita 
+                  AND visita.observacions = %s
+            """, (marker,))
 
------------------------------------------------------------------------
-3. LIBRERÍAS REQUERIDAS E INSTALACIÓN
------------------------------------------------------------------------
-Antes de ejecutar el script de generación de datos, es necesario instalar la librería 'Faker' dentro del entorno virtual de Python. Esta librería permite generar nombres, DNIs, fechas y datos médicos ficticios pero con formato real y soporte multilingüe.
+            # 2. Eliminar reservas de habitaciones asociadas a pacientes dummy
+            cur.execute("""
+                DELETE FROM reserva_habitacio 
+                USING hospital_blanes.pacient 
+                WHERE reserva_habitacio.id_pacient = pacient.id_pacient 
+                  AND pacient.descripcio = %s
+            """, (marker,))
 
-Comandos para preparar el entorno e instalar las dependencias:
+            # 3. Eliminar asistencias y operaciones dummy
+            cur.execute("""
+                DELETE FROM assistencia_operacio 
+                WHERE id_operacio IN (
+                    SELECT o.id_operacio FROM operacio o
+                    LEFT JOIN hospital_blanes.treballador t ON o.id_metge = t.id_treballador
+                    LEFT JOIN hospital_blanes.pacient p ON o.id_pacient = p.id_pacient
+                    WHERE t.observacions = %s OR p.descripcio = %s
+                )
+            """, (marker, marker))
 
-python3 -m venv venv
-source venv/bin/activate  # (En Windows usar: .\venv\Scripts\Activate.ps1)
-pip install Faker
-pip freeze > requirements.txt
+            cur.execute("""
+                DELETE FROM operacio 
+                USING hospital_blanes.treballador, hospital_blanes.pacient
+                WHERE (operacio.id_metge = treballador.id_treballador AND treballador.observacions = %s)
+                   OR (operacio.id_pacient = pacient.id_pacient AND pacient.descripcio = %s)
+            """, (marker, marker))
 
------------------------------------------------------------------------
-4. SCRIPT DE PYTHON COMPLETE: generar_dummy_data.py
------------------------------------------------------------------------
-Guarda el siguiente código en un archivo llamado 'generar_dummy_data.py'. Al ejecutarlo, creará un archivo 'poblar_hospital.sql' con todas las sentencias de inserción masiva listas para ejecutar en PostgreSQL.
+            # 4. Eliminar las 100.000 visitas (Crucial hacerlo ANTES de borrar empleados/pacientes)
+            cur.execute("DELETE FROM visita WHERE observacions = %s", (marker,))
 
-import random
-from faker import Faker
+            # 5. Eliminar roles de empleados (Especializaciones) usando USING
+            cur.execute("""
+                DELETE FROM infermeria 
+                USING hospital_blanes.treballador 
+                WHERE infermeria.id_treballador = treballador.id_treballador AND treballador.observacions = %s
+            """, (marker,))
+            
+            cur.execute("""
+                DELETE FROM metge 
+                USING hospital_blanes.treballador 
+                WHERE metge.id_treballador = treballador.id_treballador AND treballador.observacions = %s
+            """, (marker,))
+            
+            cur.execute("""
+                DELETE FROM personal_vari 
+                USING hospital_blanes.treballador 
+                WHERE personal_vari.id_treballador = treballador.id_treballador AND treballador.observacions = %s
+            """, (marker,))
 
-# Inicializamos Faker en español y en ruso para los nombres cirílicos requeridos
-fake_es = Faker('es_ES')
-fake_cyr = Faker('ru_RU')
+            # 6. Finalmente, eliminar los registros base
+            cur.execute("DELETE FROM hospital_blanes.pacient WHERE descripcio = %s", (marker,))
+            cur.execute("DELETE FROM hospital_blanes.treballador WHERE observacions = %s", (marker,))
+            
+            conn.commit()
+            return True, 'Se ha eliminado toda la información dummy de la base de datos.'
+            
+    except Exception as e:
+        logging.error(f'Error eliminando dummy data: {e}')
+        return False, f'Error al eliminar dummy data: {str(e)}'
 
-print("Generando datos de prueba para el Hospital de Blanes...")
 
-# Volúmenes de datos requeridos por las especificaciones del proyecto
-NUM_MEDICOS = 100
-NUM_ENFERMERAS = 200
-NUM_ADMINISTRATIVOS = 50
-NUM_LIMPIEZA = 100
-NUM_PACIENTES = 50000
-NUM_VISITAS = 100000
+def generate_dummy_data():
+    marker = 'DUMMY DATA'
+    fake_es = Faker('es_ES')
+    fake_ru = Faker('ru_RU') # Instancia para la muestra requerida en alfabeto cirílico
+    
+    Faker.seed(0)
+    random.seed(0)
+    
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Verificar si ya existen datos para evitar duplicados
+            cur.execute("SELECT COUNT(*) FROM hospital_blanes.pacient WHERE descripcio = %s", (marker,))
+            if cur.fetchone()[0] > 0:
+                return False, 'Ya existe información dummy en la base de datos.'
 
-with open("poblar_hospital.sql", "w", encoding="utf-8") as f:
-    f.write("-- Script de carga masiva de datos (Dummy Data) - Hospital de Blanes\n")
-    f.write("-- Codificación: UTF-8 (Soporta caracteres cirílicos)\n\n")
+            # Estructura previa (Índices y catálogos fijos)
+            _ensure_dummy_indexes(conn)
+            plant_ids = _create_or_get_planta_ids(cur)
+            _create_default_quirofans(cur, plant_ids)
+            _create_default_habitacions(cur, plant_ids)
+            conn.commit()
 
-    # 1. GENERAR PERSONAL ADMINISTRATIVO
-    f.write("-- Insertar Personal Administrativo\n")
-    for i in range(1, NUM_ADMINISTRATIVOS + 1):
-        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
-        dni = fake_es.dni()
-        f.write(f"INSERT INTO administratius (id_admin, dni, nom) VALUES ({i}, '{dni}', '{nombre}');\n")
+            # Configuración de los totales solicitados en la práctica
+            total_medicos = 100
+            total_enfermeras = 200
+            total_limpieza = 100
+            total_admin = 50
+            total_trabajadores = total_medicos + total_enfermeras + total_limpieza + total_admin
 
-    # 2. GENERAR PERSONAL DE LIMPIEZA
-    f.write("\n-- Insertar Personal de Limpieza\n")
-    for i in range(1, NUM_LIMPIEZA + 1):
-        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
-        dni = fake_es.dni()
-        f.write(f"INSERT INTO neteja (id_neteja, dni, nom) VALUES ({i}, '{dni}', '{nombre}');\n")
+            worker_rows = []
+            doctor_rows = []
+            nurse_rows = []
+            cleaning_rows = []
+            admin_rows = []
+            
+            specialities = ['Cardiología', 'Pediatría', 'Oncología', 'Dermatología', 'Ginecología', 'Neurología', 'Medicina Interna', 'Traumatología', 'Radiología', 'Psiquiatría']
+            turns = ['Matí', 'Tarda', 'Nit']
 
-    # 3. GENERAR MÉDICOS
-    f.write("\n-- Insertar Metges\n")
-    for i in range(1, NUM_MEDICOS + 1):
-        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
-        dni = fake_es.dni()
-        f.write(f"INSERT INTO metges (id_metge, dni, nom) VALUES ({i}, '{dni}', '{nombre}');\n")
+            # 1. Generar estructuras de trabajadores (Con porción cirílica)
+            for i in range(total_trabajadores):
+                # Aplicamos alfabeto cirílico a un 10% de la muestra
+                use_cyrillic = (i % 10 == 0)
+                f = fake_ru if use_cyrillic else fake_es
+                
+                nom = f.first_name()
+                primer_cognom = f.last_name()
+                segon_cognom = f.last_name()
+                address = _clean_text(f.address())
+                nif = f'DUMMY{100000000 + i}'
+                telefon = ''.join(str(random.randint(6, 9)) for _ in range(9))
+                
+                worker_rows.append((nif, nom, primer_cognom, segon_cognom, address, telefon, marker))
+                
+                if i < total_medicos:
+                    doctor_rows.append((specialities[i % len(specialities)], turns[i % len(turns)], 'Estudis dummy', 'Currículum dummy'))
+                elif i < (total_medicos + total_enfermeras):
+                    nurse_rows.append((turns[i % len(turns)], 'Estudis dummy', 'Currículum dummy', None, plant_ids[i % len(plant_ids)]))
+                elif i < (total_medicos + total_enfermeras + total_limpieza):
+                    cleaning_rows.append(('Neteja', 'Personal de neteja dummy'))
+                else:
+                    admin_rows.append(('Administració', 'Personal d’administració dummy'))
 
-    # 4. GENERAR ENFERMERAS
-    f.write("\n-- Insertar Infermeres\n")
-    for i in range(1, NUM_ENFERMERAS + 1):
-        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
-        dni = fake_es.dni()
-        medico_asignado = random.randint(1, NUM_MEDICOS)
-        f.write(f"INSERT INTO infermeres (id_infermera, dni, nom, id_metge) VALUES ({i}, '{dni}', '{nombre}', {medico_asignado});\n")
+            # Insertar los trabajadores base
+            cur.executemany(
+                'INSERT INTO hospital_blanes.treballador (nif, nom, primer_cognom, segon_cognom, adreça, telefon, observacions) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+                worker_rows
+            )
+            conn.commit()
 
-    # 5. GENERAR PACIENTES
-    f.write("\n-- Insertar Pacients\n")
-    for i in range(1, NUM_PACIENTES + 1):
-        nombre = fake_cyr.name() if random.random() < 0.2 else fake_es.name()
-        dni = fake_es.dni()
-        tsi = f"TSI{random.randint(10000000, 99999999)}"
-        f.write(f"INSERT INTO pacients (id_pacient, dni, tsi, nom) VALUES ({i}, '{dni}', '{tsi}', '{nombre}');\n")
+            # Obtener IDs seriales asignados por Postgres
+            cur.execute("SELECT id_treballador FROM hospital_blanes.treballador WHERE observacions = %s ORDER BY id_treballador", (marker,))
+            worker_ids = [row[0] for row in cur.fetchall()]
+            
+            doctor_ids = worker_ids[:total_medicos]
+            nurse_ids = worker_ids[total_medicos:(total_medicos + total_enfermeras)]
+            cleaning_ids = worker_ids[(total_medicos + total_enfermeras):(total_medicos + total_enfermeras + total_limpieza)]
+            admin_ids = worker_ids[(total_medicos + total_enfermeras + total_limpieza):]
 
-    # 6. GENERAR VISITAS
-    f.write("\n-- Insertar Visites Mèdiques\n")
-    for i in range(1, NUM_VISITAS + 1):
-        id_pacient = random.randint(1, NUM_PACIENTES)
-        id_metge = random.randint(1, NUM_MEDICOS)
-        fecha = fake_es.date_between(start_date='-2y', end_date='today')
-        diagnostico = random.choice(["Revisió anual", "Grip A", "Control analítica", "Dolor muscular", "Fractura", "Cefalea"])
-        f.write(f"INSERT INTO visites (id_visita, id_pacient, id_metge, data_visita, diagnostic) VALUES ({i}, {id_pacient}, {id_metge}, '{fecha}', '{diagnostico}');\n")
+            # Insertar Médicos
+            cur.executemany(
+                'INSERT INTO metge (id_treballador, especialitat, torn, estudis, curriculum) VALUES (%s, %s, %s, %s, %s)',
+                [(doctor_ids[idx], doctor_rows[idx][0], doctor_rows[idx][1], doctor_rows[idx][2], doctor_rows[idx][3]) for idx in range(len(doctor_rows))]
+            )
+            
+            # Insertar Enfermeras
+            infermeria_items = []
+            for idx, worker_id in enumerate(nurse_ids):
+                metge_id = random.choice(doctor_ids)
+                planta_id = plant_ids[idx % len(plant_ids)]
+                infermeria_items.append((worker_id, nurse_rows[idx][0], nurse_rows[idx][1], nurse_rows[idx][2], metge_id, planta_id))
+            cur.executemany(
+                'INSERT INTO infermeria (id_treballador, torn, estudis, curriculum, id_metge, id_planta) VALUES (%s, %s, %s, %s, %s, %s)',
+                infermeria_items
+            )
 
-print("¡Hecho! Archivo 'poblar_hospital.sql' generado correctamente.")
+            # Insertar Personal Variado (Limpieza + Administración)
+            cur.executemany(
+                'INSERT INTO personal_vari (id_treballador, tipus_feina, descripcio) VALUES (%s, %s, %s)',
+                [(worker_id, row[0], row[1]) for worker_id, row in zip(cleaning_ids + admin_ids, cleaning_rows + admin_rows)]
+            )
+            conn.commit()
 
------------------------------------------------------------------------
-5. COMANDAS DE EJECUCIÓN Y CONTROL DE VERSIONES (GIT)
------------------------------------------------------------------------
-Comandos para ejecutar el script y arrancar la aplicación principal:
+            # 2. INSERTAR 50.000 PACIENTES EN LOTES (Para optimizar memoria)
+            patient_batch_size = 5000
+            patient_sql = 'INSERT INTO hospital_blanes.pacient (nom, nss, adreça, descripcio) VALUES (%s, %s, %s, %s)'
+            patient_rows = []
+            
+            for j in range(50000):
+                # Cada 10 pacientes, metemos uno con nombre en alfabeto cirílico
+                use_cyrillic = (j % 10 == 0)
+                f = fake_ru if use_cyrillic else fake_es
+                
+                nom_completo = f"{f.first_name()} {f.last_name()}"
+                nss = f'200{j:011d}'
+                address = _clean_text(f.address())
+                
+                patient_rows.append((nom_completo, nss, address, marker))
+                
+                if len(patient_rows) >= patient_batch_size:
+                    cur.executemany(patient_sql, patient_rows)
+                    conn.commit()
+                    patient_rows = []
+                    
+            if patient_rows:
+                cur.executemany(patient_sql, patient_rows)
+                conn.commit()
 
-python generar_dummy_data.py
-python main.py
+            # Recorrer los IDs de pacientes generados para poder linkearlos con visitas
+            cur.execute("SELECT id_pacient FROM hospital_blanes.pacient WHERE descripcio = %s ORDER BY id_pacient", (marker,))
+            patient_ids = [row[0] for row in cur.fetchall()]
 
-Comandos para actualizar el repositorio de GitHub con los avances:
+            # 3. INSERTAR 100.000 VISITAS EN LOTES DE COMITEO RÁPIDO
+            visit_batch_size = 10000
+            visit_sql = 'INSERT INTO visita (dia_visita, hora_visita, observacions, id_metge, id_pacient) VALUES (%s, %s, %s, %s, %s)'
+            visit_rows = []
+            base_date = datetime.today().date()
+            
+            for j in range(100000):
+                dia = base_date - timedelta(days=random.randint(0, 365))
+                hora = f'{random.randint(8, 18):02d}:{random.choice([0, 15, 30, 45]):02d}:00'
+                visit_rows.append((dia, hora, marker, random.choice(doctor_ids), random.choice(patient_ids)))
+                
+                if len(visit_rows) >= visit_batch_size:
+                    cur.executemany(visit_sql, visit_rows)
+                    conn.commit()
+                    visit_rows = []
+                    
+            if visit_rows:
+                cur.executemany(visit_sql, visit_rows)
+                conn.commit()
 
-git status
-git add .
-git commit -m "Feat: Finalizada la fase de Dummy Data masiva con soporte cirílico"
-git push origin main
-=======================================================================
+            return True, f'Éxito: Se han generado {total_trabajadores} trabajadores ({total_medicos} metges, {total_enfermeras} infermeres, {total_limpieza} neteja, {total_admin} adm.), 50.000 pacients y 100.000 visites (incluyendo muestras en alfabeto cirílico).'
+            
+    except Exception as e:
+        logging.error(f'Error generando dummy data: {e}')
+        return False, f'Error al generar dummy data: {str(e)}'
